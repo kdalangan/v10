@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CapturePCBPage = () => {
@@ -6,7 +6,28 @@ const CapturePCBPage = () => {
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const testFileInputRef = useRef<HTMLInputElement>(null);
   const templateFileInputRef = useRef<HTMLInputElement>(null);
+  const [activeIndex, setActiveIndex] = useState(1); // Default to CAPTURE page (index 1)
+  const navRefs = useRef<HTMLDivElement[]>([]);
+  const pillRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const navItems = [
+    { label: 'HOME', route: '/' },
+    { label: 'CAPTURE or UPLOAD PCB', route: '/capture' },
+    { label: 'FEEDBACK', route: '/feedback' },
+    { label: 'SIMULATE CONTINUITY', route: '/simulate' },
+  ];
+
+  useEffect(() => {
+    const activeEl = navRefs.current[activeIndex];
+    const pillEl = pillRef.current;
+
+    if (activeEl && pillEl) {
+      const { offsetLeft, offsetWidth } = activeEl;
+      pillEl.style.transform = `translateX(${offsetLeft}px)`;
+      pillEl.style.width = `${offsetWidth}px`;
+    }
+  }, [activeIndex]);
 
   const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -20,11 +41,7 @@ const CapturePCBPage = () => {
     }
   };
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
-
-  const styles = {
+  const styles: { [key: string]: React.CSSProperties } = {
     container: {
       display: 'flex',
       flexDirection: 'column',
@@ -42,22 +59,21 @@ const CapturePCBPage = () => {
       alignItems: 'center',
       padding: '.10px 30px',
       backgroundColor: 'white',
-      position: 'fixed',       // 🧷 Keeps it on top
-      top: 0,                  // ⬆️ Stick to the top
+      position: 'fixed',
+      marginRight: '.1px',
+      top: 0,
       left: 0,
-      right: 0,
-      zIndex: 1000,            // 🔝 Keep above other content
-      height: '80px',          // 📏 Optional: Define height
-
+      right: 0.001,
+      zIndex: 1000,
+      height: '80px',
     },
-    
     logoContainer: {
       display: 'flex',
       alignItems: 'center',
       cursor: 'pointer',
     },
     logo: {
-      marginTop: '10px',
+      marginTop: '20px',
       width: '100px',
       height: '100px',
       borderRadius: '8px',
@@ -65,14 +81,30 @@ const CapturePCBPage = () => {
     },
     brandName: {
       fontSize: '24px',
+      marginTop: '11px',
       fontWeight: 'bold',
-      marginLeft: '10px',
+      marginLeft: '.5px',
+      color: '#000000',
+    },
+    navBarContainer: {
+      marginTop: '15px',
+      width: 'fit-content',
+      marginRight: '.1px',
+      backgroundColor: '#424242',
+      borderRadius: '100px',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: '15px 20px',
+      position: 'relative',
+      overflow: 'hidden',
     },
     navBar: {
-      backgroundColor: '#4a4a4a',
-      borderRadius: '50px',
       display: 'flex',
-      padding: '5px',
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      marginRight: '.1px',
     },
     navItem: {
       padding: '10px 20px',
@@ -82,109 +114,127 @@ const CapturePCBPage = () => {
       color: 'white',
       zIndex: 1,
     },
-    activeNavItem: {
+    activePill: {
+      position: 'absolute',
+      height: '100%',
       backgroundColor: 'white',
-      color: 'black',
-      padding: '10px 20px',
       borderRadius: '50px',
-      fontWeight: '500',
-      cursor: 'pointer',
+      top: 0,
+      left: 0,
+      transition: 'transform 0.3s ease, width 0.3s ease',
+      zIndex: 0,
     },
     divider: {
       height: '10px',
       backgroundColor: '#ffc107',
       width: '100%',
-      marginTop: '10px',
+      marginTop: '95px', // Added top margin to account for fixed header
     },
     contentContainer: {
+      marginTop: '.1px',
       display: 'flex',
-      justifyContent: 'space-around',
+      justifyContent: 'center',
       alignItems: 'center',
-      padding: '40px 20px',
+      padding: '40px 200px',
       flexGrow: 1,
+      gap: '80px', // Add space between containers
     },
     captureSection: {
       backgroundColor: '#ffd700',
-      borderRadius: '40px',
-      padding: '40px',
-      width: '45%',
+      borderRadius: '100px',
+      padding: '30px',
+      width: '50% ', // Make capture section smaller
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      maxWidth: '500px', // Limit maximum width
+      justifyContent: 'center',
     },
     uploadSection: {
       backgroundColor: '#ffd700',
-      borderRadius: '40px',
-      padding: '40px',
-      width: '45%',
+      borderRadius: '100px',
+      padding: '30px',
+      width: '50%', // Make upload section slightly larger
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      maxWidth: '500px', // Limit maximum width
     },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gridGap: '20px',
-      marginBottom: '30px',
-      width: '100%',
-    },
-    gridItem: {
+    cameraContainer: {
+      width: '250px',
+      height: '250px',
       backgroundColor: '#e0e0e0',
-      aspectRatio: '1/1',
-      borderRadius: '5px',
+      borderRadius: '10px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: '15px',
+    },
+    cameraIcon: {
+      fontSize: '50px',
+      color: '#4a4a4a',
     },
     captureButton: {
       backgroundColor: '#4a4a4a',
       color: 'white',
-      padding: '12px 35px',
+      padding: '10px 30px', // Slightly smaller padding
       borderRadius: '50px',
       border: 'none',
       fontWeight: 'bold',
       cursor: 'pointer',
-      fontSize: '16px',
-      marginTop: '20px',
+      fontSize: '15px', // Slightly smaller font
+      marginTop: '15px',
     },
     uploadContainer: {
-      width: '100%',
+      width: '90%',
+    
+      
     },
     sectionTitle: {
-      fontSize: '22px',
+      fontSize: '20px',
       fontWeight: 'bold',
-      marginBottom: '15px',
+      color: '#4a4a4a',
+      marginBottom: '12px',
       textAlign: 'left',
       width: '100%',
     },
     fileUploadArea: {
       backgroundColor: '#e0e0e0',
       borderRadius: '10px',
-      padding: '20px',
+      padding: '15px',
       display: 'flex',
       alignItems: 'center',
-      marginBottom: '30px',
-      width: '100%',
+      marginBottom: '20px',
+      width: '95%',
     },
     chooseFileButton: {
       backgroundColor: '#4a4a4a',
       color: 'white',
-      padding: '10px 20px',
+      padding: '8px 15px',
       borderRadius: '50px',
       border: 'none',
       cursor: 'pointer',
       marginRight: '15px',
+      fontSize: '14px',
     },
     fileStatus: {
       color: '#666',
+      fontSize: '14px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '60%',
     },
     uploadButton: {
       backgroundColor: '#4a4a4a',
       color: 'white',
-      padding: '12px 35px',
+      padding: '10px 30px',
       borderRadius: '50px',
       border: 'none',
       fontWeight: 'bold',
       cursor: 'pointer',
-      fontSize: '16px',
-      marginTop: '20px',
+      fontSize: '15px',
+      marginTop: '15px',
     },
     hiddenFileInput: {
       display: 'none',
@@ -192,45 +242,45 @@ const CapturePCBPage = () => {
   };
 
   return (
-    <div style={styles.container as React.CSSProperties}>
+    <div style={styles.container}>
       {/* Header with Logo and Nav */}
-      <header style={styles.header as React.CSSProperties}>
+      <header style={styles.header}>
         <div 
           style={styles.logoContainer}
-          onClick={() => handleNavigation('/')}
+          onClick={() => navigate('/')}
         >
-          <div style={styles.logo as React.CSSProperties}>
+          <div style={styles.logo}>
             <img src="src/assets/pxrt.png" alt="Logo" style={{ width: '100%', height: 'auto' }} />
           </div>
           <div style={styles.brandName}>PXRT</div>
         </div>
 
-        <nav style={styles.navBar}>
-          <div 
-            style={styles.navItem}
-            onClick={() => handleNavigation('/')}
-          >
-            HOME
-          </div>
-          <div 
-            style={styles.activeNavItem}
-            onClick={() => handleNavigation('/capture')}
-          >
-            CAPTURE or UPLOAD PCB
-          </div>
-          <div 
-            style={styles.navItem}
-            onClick={() => handleNavigation('/feedback')}
-          >
-            FEEDBACK
-          </div>
-          <div 
-            style={styles.navItem}
-            onClick={() => handleNavigation('/simulate')}
-          >
-            SIMULATE CONTINUITY
-          </div>
-        </nav>
+        {/* Navigation Bar - Updated to match Home.tsx */}
+        <div style={styles.navBarContainer}>
+          <nav style={styles.navBar}>
+            <div ref={pillRef} style={styles.activePill}></div>
+            {navItems.map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  ...styles.navItem,
+                  color: activeIndex === index ? 'black' : 'white',
+                }}
+                ref={(el) => {
+                  if (el) {
+                    navRefs.current[index] = el;
+                  }
+                }}
+                onClick={() => {
+                  setActiveIndex(index);
+                  navigate(item.route);
+                }}
+              >
+                {item.label}
+              </div>
+            ))}
+          </nav>
+        </div>
       </header>
 
       {/* Yellow Divider */}
@@ -239,20 +289,19 @@ const CapturePCBPage = () => {
       {/* Main Content */}
       <div style={styles.contentContainer}>
         {/* Left Section - Capture PCB */}
-        <div style={styles.captureSection as React.CSSProperties}>
-          <div style={styles.grid}>
-            {[...Array(9)].map((_, index) => (
-              <div key={index} style={styles.gridItem}></div>
-            ))}
+        <div style={styles.captureSection}>
+          {/* Camera preview container (replaces grid) */}
+          <div style={styles.cameraContainer}>
+            <div style={styles.cameraIcon}>📷</div>
           </div>
           <button style={styles.captureButton}>CAPTURE PCB</button>
         </div>
 
         {/* Right Section - Upload PCB */}
-        <div style={styles.uploadSection as React.CSSProperties}>
+        <div style={styles.uploadSection}>
           <div style={styles.uploadContainer}>
             {/* Test Image */}
-            <h3 style={styles.sectionTitle as React.CSSProperties}>Test Image:</h3>
+            <h3 style={styles.sectionTitle}>Test Image:</h3>
             <div style={styles.fileUploadArea}>
               <input
                 type="file"
@@ -273,7 +322,7 @@ const CapturePCBPage = () => {
             </div>
 
             {/* Template Image */}
-            <h3 style={styles.sectionTitle as React.CSSProperties}>Template Image:</h3>
+            <h3 style={styles.sectionTitle}>Template Image:</h3>
             <div style={styles.fileUploadArea}>
               <input
                 type="file"

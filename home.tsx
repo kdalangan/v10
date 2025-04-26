@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import NavBar from './NavBar'; 
+
 
 const Home = () => {
   const [activeIndex, setActiveIndex] = useState(0);
